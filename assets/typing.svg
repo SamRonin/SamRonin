@@ -24,6 +24,6 @@
   </rect>
   <line x1="922" y1="26" x2="922" y2="66" stroke="#F2EAD9" stroke-opacity="0.08"/>
   <text x="952" y="44" class="m" font-size="9.5" fill="#8C8779" letter-spacing="1.6">STATUS</text>
-  <text x="952" y="62" class="m" font-size="12.5" fill="#FF4D5A" letter-spacing="1.2">ONLINE</text><text x="1060" y="44" class="m" font-size="9.5" fill="#8C8779" letter-spacing="1.6">LICENSE</text>
-  <text x="1060" y="62" class="m" font-size="12.5" fill="#B9B3A5" letter-spacing="1.2">MIT</text><text x="1168" y="44" class="m" font-size="9.5" fill="#8C8779" letter-spacing="1.6">UPTIME</text>
-  <text x="1168" y="62" class="m" font-size="12.5" fill="#B9B3A5" letter-spacing="1.2">365D</text></svg>
+  <text x="952" y="62" class="m" font-size="12.5" fill="#FF4D5A" letter-spacing="1.2">PUBLIC</text><text x="1060" y="44" class="m" font-size="9.5" fill="#8C8779" letter-spacing="1.6">REFRESH</text>
+  <text x="1060" y="62" class="m" font-size="12.5" fill="#B9B3A5" letter-spacing="1.2">6H</text><text x="1168" y="44" class="m" font-size="9.5" fill="#8C8779" letter-spacing="1.6">TELEMETRY</text>
+  <text x="1168" y="62" class="m" font-size="12.5" fill="#B9B3A5" letter-spacing="1.2">ZERO</text></svg>

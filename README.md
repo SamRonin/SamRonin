@@ -88,9 +88,9 @@ Most of my work lives where **the browser** meets **native performance**: Chrome
 ```console
 sam@ronin:~$ status
 
-  ▸ shipping   downwise       ⬇️ Smart right-click downloader & real file converter for Chro
-  ▸ shipping   dropshrink     🎬 Fast, offline drag-and-drop video & image compressor powered
-  ▸ shipping   Page2LLM       Extract clean, structured page text as Markdown, ready for LLM
+  ▸ shipping   downwise       Smart right-click downloader & real file…
+  ▸ shipping   dropshrink     Fast, offline drag-and-drop video & image…
+  ▸ shipping   Page2LLM       Extract clean, structured page text as…
   ▸ learning   Rust          ownership, memory model, zero-cost abstractions
   ▸ open to    collabs       local-first tools, RTL/Persian UX, MV3 extensions
 ```

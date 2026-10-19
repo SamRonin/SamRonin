@@ -5,7 +5,7 @@
         pathLength="100" stroke-dasharray="9 91" stroke-dashoffset="100">
     <animate attributeName="stroke-dashoffset" values="100;0" dur="11s" repeatCount="indefinite"/>
   </line>
-  <text x="0" y="46" class="m" font-size="11.5" fill="#8C8779" letter-spacing="1.6">© 2025 SAM RONIN</text>
+  <text x="0" y="46" class="m" font-size="11.5" fill="#8C8779" letter-spacing="1.6">© 2026 SAM RONIN</text>
   <text x="336" y="46" class="m" font-size="11.5" fill="#B9B3A5" letter-spacing="1.7">BUILT WITH INTENT</text>
   <text x="484" y="46" class="m" font-size="11.5" fill="#E63946" letter-spacing="1.7">·</text>
   <text x="500" y="46" class="m" font-size="11.5" fill="#B9B3A5" letter-spacing="1.7">SHIPPED IN PUBLIC</text>

@@ -5,8 +5,8 @@
 - **Handle:** [SamRonin](https://github.com/SamRonin)
 - **Bio:** Code ronin · building local-first, privacy-first tools — Chrome MV3, Tauri v2 + Rust, Persian-first UI. Zero telemetry.
 - **Location:** Tehran / Iran
-- **Public repos:** 4
-- **Contributions (52w):** 202
+- **Public repos:** 5
+- **Contributions (52w):** 203
 - **Core languages:** TypeScript, JavaScript, Rust, HTML, CSS, Shell
 
 ## What he builds

@@ -11,6 +11,9 @@ the output. A guard at the end fails the build if any private repo name leaks.
 
 Usage:
     GITHUB_TOKEN=... python3 scripts/profile.py [--login SamRonin]
+
+Offline test-suite (no token, no network):
+    python3 -m unittest discover -s tests -v
 """
 from __future__ import annotations
 
@@ -21,8 +24,10 @@ import math
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
+import xml.etree.ElementTree as ET
 from typing import Any
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -79,97 +84,195 @@ CRAFT_TOPICS = {
 
 # ─────────────────────────────────────────── GitHub API
 API = "https://api.github.com"
+RETRY_ATTEMPTS = 3
+RETRY_BASE_DELAY = 1.0
 
 
-def readme_title(login: str, repo: str) -> str | None:
-    for branch in ("HEAD", "main", "master"):
-        for fname in ("README.md", "readme.md", "README.MD"):
-            url = f"https://raw.githubusercontent.com/{login}/{repo}/{branch}/{fname}"
+class TokenMissing(RuntimeError):
+    """No GitHub token — the contribution calendar (GraphQL) cannot be read."""
+
+
+def _headers(token: str | None, extra: dict | None = None) -> dict:
+    h = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "samronin-profile-generator",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    if token:  # never send an empty Authorization header
+        h["Authorization"] = f"Bearer {token}"
+    if extra:
+        h.update(extra)
+    return h
+
+
+def _rate_limited(e: urllib.error.HTTPError) -> bool:
+    if (e.headers or {}).get("X-RateLimit-Remaining") == "0":
+        return True
+    try:
+        return "rate limit" in e.read().decode("utf-8", "ignore").lower()
+    except Exception:
+        return False
+
+
+def _retryable(e: Exception) -> bool:
+    if isinstance(e, urllib.error.HTTPError):
+        if e.code == 429 or e.code >= 500:
+            return True
+        if e.code == 403:  # 403 doubles as "rate limit exhausted" on GitHub
+            return _rate_limited(e)
+        return False
+    return isinstance(e, (urllib.error.URLError, TimeoutError, ConnectionError, OSError))
+
+
+def _request(url: str, *, data: bytes | None = None, headers: dict | None = None,
+             timeout: int = 30) -> Any:
+    """urlopen with bounded retry/backoff for transient failures (5xx/429/network)."""
+    for attempt in range(RETRY_ATTEMPTS):
+        req = urllib.request.Request(url, data=data, headers=headers or {},
+                                     method="POST" if data is not None else "GET")
+        try:
+            return urllib.request.urlopen(req, timeout=timeout)
+        except Exception as e:
+            if not _retryable(e) or attempt == RETRY_ATTEMPTS - 1:
+                raise
+            retry_after = None
+            if isinstance(e, urllib.error.HTTPError):
+                retry_after = (e.headers or {}).get("Retry-After")
             try:
-                with urllib.request.urlopen(url, timeout=10) as r:
-                    text = r.read(4000).decode("utf-8", "ignore")
-            except Exception:
-                continue
-            heads = []
-            # HTML <h1> titles first (common in RTL-first READMEs)
-            for m in re.finditer(r"<h1[^>]*>(.*?)</h1>", text, re.S | re.I):
-                t = re.sub(r"<[^>]+>", "", m.group(1)).strip()
-                if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ._+&!\-]*", t or ""):
-                    heads.append(t)
-            for line in text.splitlines():
-                line = line.strip()
-                if not line.startswith("#"):
-                    continue
-                title = re.sub(r"<[^>]+>", "", line.lstrip("#")).strip()
-                title = re.sub(r"[*_`\[\]]", "", title).strip()
-                if 0 < len(title) <= 32 and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ._+&!\-]*", title):
-                    heads.append(title)
-            if heads:
-                for h in heads:
-                    if h.lower().replace(" ", "") == repo.lower():
-                        return h
-                return heads[0]
-            return None
+                delay = float(retry_after) if retry_after else RETRY_BASE_DELAY * (2 ** attempt)
+            except (TypeError, ValueError):
+                delay = RETRY_BASE_DELAY * (2 ** attempt)
+            time.sleep(min(delay, 30.0))
+    raise RuntimeError("unreachable")
+
+
+def _next_link(link: str | None) -> str | None:
+    for part in (link or "").split(","):
+        if 'rel="next"' in part:
+            m = re.search(r"<([^>]+)>", part)
+            if m:
+                return m.group(1)
     return None
 
 
 def gh(path: str, token: str | None) -> Any:
-    req = urllib.request.Request(API + path, headers={
-        "Accept": "application/vnd.github+json",
-        "Authorization": f"Bearer {token}" if token else "",
-        "User-Agent": "samronin-profile-generator",
-        "X-GitHub-Api-Version": "2022-11-28",
-    })
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with _request(API + path, headers=_headers(token)) as r:
         return json.load(r)
 
 
+def gh_all_pages(path: str, token: str | None, max_pages: int = 20) -> list:
+    """Follow GitHub pagination so accounts with >100 repos aren't truncated."""
+    items: list = []
+    url = API + path
+    for _ in range(max_pages):
+        with _request(url, headers=_headers(token)) as r:
+            data = json.load(r)
+            nxt = _next_link(r.headers.get("Link"))
+        if not isinstance(data, list):
+            return data
+        items.extend(data)
+        if not nxt:
+            return items
+        url = nxt
+    print(f"::warning::pagination stopped after {max_pages} pages — counts may be incomplete")
+    return items
+
+
 def gql(query: str, token: str | None, variables: dict | None = None) -> dict:
+    if not token:
+        raise TokenMissing("no GitHub token — the contribution calendar needs one")
     body = json.dumps({"query": query, "variables": variables or {}}).encode()
-    req = urllib.request.Request(API + "/graphql", data=body, headers={
-        "Authorization": f"Bearer {token}", "Content-Type": "application/json",
-        "User-Agent": "samronin-profile-generator",
-        "Accept": "application/vnd.github+json"})
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with _request(API + "/graphql", data=body, headers=_headers(token, {
+            "Content-Type": "application/json"})) as r:
         out = json.load(r)
     if "errors" in out:
-        raise SystemExit(f"GraphQL error: {out['errors']}")
+        raise RuntimeError(f"GraphQL error: {out['errors']}")
     return out["data"]
 
 
-def fetch(login: str, token: str | None) -> dict:
-    user = gh(f"/users/{login}", token)
-    raw_repos = gh(f"/users/{login}/repos?per_page=100&sort=pushed&type=owner", token)
+def readme_title(login: str, repo: str, token: str | None) -> str | None:
+    """First usable heading of a repo README (one API call, default branch)."""
+    try:
+        with _request(f"{API}/repos/{login}/{repo}/readme", headers=_headers(token, {
+                "Accept": "application/vnd.github.raw+json"})) as r:
+            text = r.read(4000).decode("utf-8", "ignore")
+    except Exception:
+        return None
+    heads = []
+    # HTML <h1> titles first (common in RTL-first READMEs)
+    for m in re.finditer(r"<h1[^>]*>(.*?)</h1>", text, re.S | re.I):
+        t = re.sub(r"<[^>]+>", "", m.group(1)).strip()
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ._+&!\-]*", t or ""):
+            heads.append(t)
+    for line in text.splitlines():
+        line = line.strip()
+        if not line.startswith("#"):
+            continue
+        title = re.sub(r"<[^>]+>", "", line.lstrip("#")).strip()
+        title = re.sub(r"[*_`\[\]]", "", title).strip()
+        if 0 < len(title) <= 32 and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ._+&!\-]*", title):
+            heads.append(title)
+    if not heads:
+        return None
+    for h in heads:
+        if h.lower().replace(" ", "") == repo.lower():
+            return h
+    return heads[0]
 
-    private_names = [r["name"] for r in raw_repos if r.get("private")]
+
+def list_private_names(token: str | None) -> list[str]:
+    """Best-effort names of the token owner's private repos, for the leak guard.
+
+    /users/{login}/repos only ever returns public repos, so without this call
+    the privacy guard would have nothing to check. Fails soft: no permission,
+    no names, no crash.
+    """
+    if not token:
+        return []
+    try:
+        return [r.get("name", "") for r in gh_all_pages(
+            "/user/repos?visibility=private&per_page=100&type=owner", token, max_pages=5)]
+    except Exception:
+        return []
+
+
+def fetch(login: str, token: str | None) -> dict:
+    if not token:
+        raise TokenMissing("no GitHub token (set GITHUB_TOKEN / PROFILE_TOKEN)")
+    user = gh(f"/users/{login}", token)
+    raw_repos = gh_all_pages(f"/users/{login}/repos?per_page=100&sort=pushed&type=owner", token)
+
+    private_names = list_private_names(token)
     repos = [r for r in raw_repos if not r.get("private") and not r.get("fork")
              and not r.get("archived") and r["name"].lower() != login.lower()]
 
-    # language bytes per repo (top repos only, to stay well inside rate limits)
-    for r in repos[:12]:
+    ranked = rank_repos(repos)
+    # language bytes for the highest-ranked repos only (stays inside rate limits)
+    for r in ranked[:12]:
         try:
             r["_langs"] = gh(f"/repos/{login}/{r['name']}/languages", token)
         except urllib.error.HTTPError:
             r["_langs"] = {}
-
-    ranked = rank_repos(repos)
+    ranked = rank_repos(repos)          # re-rank now that language depth is known
     for r in ranked[:8]:
-        r["_title"] = readme_title(login, r["name"])
+        r["_title"] = readme_title(login, r["name"], token)
 
     cal = gql("""query($login:String!){user(login:$login){contributionsCollection{
         contributionCalendar{totalContributions weeks{contributionDays{date contributionCount}}}
     }}}""", token, {"login": login})
-    weeks = cal["user"]["contributionsCollection"]["contributionCalendar"]["weeks"]
+    cal_user = (cal or {}).get("user") or {}
+    calendar = ((cal_user.get("contributionsCollection") or {}).get("contributionCalendar")
+                or {})
 
-    return {"user": user, "repos": repos, "weeks": weeks,
-            "total_contribs": cal["user"]["contributionsCollection"]
-                                ["contributionCalendar"]["totalContributions"],
+    return {"user": user, "repos": repos,
+            "weeks": calendar.get("weeks") or [],
+            "total_contribs": calendar.get("totalContributions") or 0,
             "private_names": private_names}
 
 
 # ─────────────────────────────────────────── helpers
 EMOJI = re.compile("[\U0001F000-\U0001FAFF\u2190-\u21FF\u2600-\u27BF\u2B00-\u2BFF\uFE0F\u200D]")
-RTL_RUN = re.compile("[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]+[\s\u200c\u200f\u060c\u061f.!?،؛:\-–—]*")
+RTL_RUN = re.compile(r"[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]+[\s\u200c\u200f\u060c\u061f.!?،؛:\-–—]*")
 
 
 def clean_text(text: str) -> str:
@@ -187,6 +290,20 @@ def clean_text(text: str) -> str:
     return t.strip(" |·—–-\t")
 
 
+def md_cell(text: str, limit: int = 96) -> str:
+    """One safe markdown-table cell: pipes escaped so the table can't break."""
+    return clean_text(text)[:limit].replace("|", "\\|") or "—"
+
+
+def clip(text: str, n: int) -> str:
+    """Truncate at a word boundary (used by the README console block)."""
+    t = clean_text(text)
+    if len(t) <= n:
+        return t
+    cut = t.rfind(" ", 0, n)
+    return (t[:cut] if cut > 10 else t[:n]).rstrip() + "…"
+
+
 def esc(s: str) -> str:
     return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -198,6 +315,15 @@ def mw(s: str, size: float, ls: float = 0.0) -> float:
 def wrap(text: str, maxw: float, size: float, max_lines: int = 3) -> list[str]:
     words, lines, cur = (text or "").split(), [], ""
     for wd in words:
+        while mw(wd, size) > maxw:          # a single word wider than the line
+            cut = max(1, int(maxw / (size * 0.60)) - 1)
+            piece, wd = wd[:cut], wd[cut:]
+            if cur:
+                lines.append(cur)
+                cur = ""
+            lines.append(piece)
+        if not wd:
+            continue
         t = (cur + " " + wd).strip()
         if mw(t, size) <= maxw:
             cur = t
@@ -251,8 +377,14 @@ def rank_repos(repos: list[dict]) -> list[dict]:
 
     def recency(r: dict) -> float:
         # present, but deliberately weak: this profile is curated by substance
-        pushed = dt.datetime.fromisoformat(r["pushed_at"].replace("Z", "+00:00"))
-        days = max(1.0, (now - pushed).total_seconds() / 86400)
+        pushed = r.get("pushed_at")
+        if not pushed:
+            return 0.0
+        try:
+            pushed_dt = dt.datetime.fromisoformat(str(pushed).replace("Z", "+00:00"))
+        except ValueError:
+            return 0.0
+        days = max(1.0, (now - pushed_dt).total_seconds() / 86400)
         return 0.35 / math.sqrt(days)
 
     for r in repos:
@@ -360,23 +492,28 @@ def build_stack(repos: list[dict]) -> list[tuple[str, list[str]]]:
     craft_order = ["Local-first", "Privacy", "Offline", "RTL / Persian UI", "Open source", "i18n", "A11y"]
     craft = sorted(craft, key=lambda x: craft_order.index(x) if x in craft_order else 99)[:4]
 
-    return [("LANGUAGES", languages or ["TypeScript"]),
-            ("FRAMEWORKS", frameworks or ["React", "Vite"]),
-            ("SURFACES", surfaces or ["Web"]),
-            ("CRAFT", craft or ["Open source"])]
+    # no fabricated defaults: with no data we show an honest placeholder
+    return [("LANGUAGES", languages or ["—"]),
+            ("FRAMEWORKS", frameworks or ["—"]),
+            ("SURFACES", surfaces or ["—"]),
+            ("CRAFT", craft or ["—"])]
 
 
 def build_stats(data: dict, repos: list[dict]) -> list[tuple[str, str, str]]:
-    created = dt.datetime.fromisoformat(data["user"]["created_at"].replace("Z", "+00:00"))
+    created = dt.datetime.fromisoformat(str(data["user"]["created_at"]).replace("Z", "+00:00"))
     years = max(1, (dt.datetime.now(dt.timezone.utc) - created).days // 365)
-    return [(f"{len(repos):02d}", "PUBLIC REPOS", "and counting"),
+    # the headline number must match the dynamic README badge exactly
+    # (data["user"]["public_repos"] is what the badge queries)
+    total_public = int(data["user"].get("public_repos") or len(repos))
+    return [(f"{total_public:02d}", "PUBLIC REPOS", "and counting"),
             (f"{years:02d}", "YEAR BUILDING", f"since {created:%b %Y}".lower()),
             (f"{data['total_contribs']}", "CONTRIBUTIONS", "last 52 weeks"),
             ("00", "TELEMETRY", "local-first by design")]
 
 
 # ─────────────────────────────────────────── assets
-def banner() -> None:
+def banner(est_year: int | None = None) -> None:
+    est_year = est_year or dt.date.today().year
     defs = f'''
     <radialGradient id="sunG" cx="42%" cy="34%" r="72%">
       <stop offset="0" stop-color="#FF5A68"/><stop offset="0.55" stop-color="#D62828"/>
@@ -451,7 +588,7 @@ def banner() -> None:
       <animate attributeName="opacity" values="0;1" begin="0.2s" dur="0.6s" fill="freeze"/>
       <rect x="76" y="78" width="22" height="2" fill="#E63946"/>
       <text x="110" y="92" class="m" font-size="14" fill="#E63946" letter-spacing="6.5">// CODE RONIN</text>
-      <text x="420" y="92" class="m" font-size="11" fill="#8C8779" letter-spacing="3">EST. 2025</text>
+      <text x="420" y="92" class="m" font-size="11" fill="#8C8779" letter-spacing="3">EST. {est_year}</text>
     </g>
     <g opacity="0">
       <animate attributeName="opacity" values="0;1" begin="0.5s" dur="0.7s" fill="freeze"/>
@@ -488,7 +625,7 @@ def banner() -> None:
       <animate attributeName="opacity" values="0;1" begin="1.3s" dur="0.7s" fill="freeze"/>
       <text x="76" y="356" class="m" font-size="12.5" fill="#8C8779" letter-spacing="2.4">TEHRAN · IRAN</text>
       <text x="220" y="356" class="m" font-size="12.5" fill="#E63946" letter-spacing="2.4">//</text>
-      <text x="248" y="356" class="m" font-size="12.5" fill="#8C8779" letter-spacing="2.4">BUILDING SINCE 2025</text>
+      <text x="248" y="356" class="m" font-size="12.5" fill="#8C8779" letter-spacing="2.4">BUILDING SINCE {est_year}</text>
       <text x="478" y="356" class="m" font-size="12.5" fill="#E63946" letter-spacing="2.4">//</text>
       <text x="506" y="356" class="m" font-size="12.5" fill="#8C8779" letter-spacing="2.4">SHIPPING IN PUBLIC</text>
       <text x="1204" y="56" class="m" font-size="11" fill="#8C8779" letter-spacing="2.2" text-anchor="end">SYSTEM <tspan fill="#FF4D5A">ONLINE</tspan></text>
@@ -564,7 +701,7 @@ def typing() -> None:
   <line x1="922" y1="26" x2="922" y2="66" stroke="{INK}" stroke-opacity="0.08"/>
   {''.join(f"""<text x="{952 + i * 108}" y="44" class="m" font-size="9.5" fill="{MUTED}" letter-spacing="1.6">{k}</text>
   <text x="{952 + i * 108}" y="62" class="m" font-size="12.5" fill="{c}" letter-spacing="1.2">{v}</text>"""
-            for i, (k, v, c) in enumerate([("STATUS", "ONLINE", RED_HI), ("LICENSE", "MIT", DIM), ("UPTIME", "365D", DIM)]))}''')
+            for i, (k, v, c) in enumerate([("STATUS", "PUBLIC", RED_HI), ("REFRESH", "6H", DIM), ("TELEMETRY", "ZERO", DIM)]))}''')
 
 
 def stats_asset(stats: list[tuple[str, str, str]]) -> None:
@@ -638,7 +775,10 @@ def activity_asset(weeks: list[dict], total: int) -> None:
     body = []
     last_month = None
     for wi, wk in enumerate(weeks):
-        d0 = dt.date.fromisoformat(wk["contributionDays"][0]["date"])
+        days = wk.get("contributionDays") or []
+        if not days:
+            continue
+        d0 = dt.date.fromisoformat(str(days[0]["date"])[:10])
         if d0.month != last_month:
             last_month = d0.month
             if wi < len(weeks) - 1:
@@ -647,7 +787,7 @@ def activity_asset(weeks: list[dict], total: int) -> None:
         if lab:
             body.append(f'<text x="{left - 14}" y="{top + i * step + cell - 2.5:.0f}" class="m" font-size="9.5" fill="{MUTED}" text-anchor="end">{lab}</text>')
     for wi, wk in enumerate(weeks):
-        for di, day in enumerate(wk["contributionDays"]):
+        for di, day in enumerate(wk.get("contributionDays") or []):
             c = day["contributionCount"]
             body.append(f'<rect x="{left + wi * step:.1f}" y="{top + di * step:.1f}" width="{cell}" height="{cell}" rx="2.6" '
                         f'fill="{color(c)}" opacity="0"><animate attributeName="opacity" values="0;1" '
@@ -655,21 +795,22 @@ def activity_asset(weeks: list[dict], total: int) -> None:
                         f'<title>{day["date"]}: {c}</title></rect>')
     hw = len(weeks) * step
     quiet_cx = left + hw * 0.30
-    cap = "PRE-LAUNCH · STEALTH MODE"
+    cap = "EARLY DAYS · SHIPPING IN PUBLIC"
     capw = mw(cap, 10.5, 5.0) + 46
     capy = top + 2.55 * step
     body.append(f'<rect x="{quiet_cx - capw / 2:.0f}" y="{capy:.0f}" width="{capw:.0f}" height="30" rx="15" fill="{PANEL}" stroke="{INK}" stroke-opacity="0.07"/>')
     body.append(f'<text x="{quiet_cx:.0f}" y="{capy + 19.5:.0f}" class="m" font-size="10.5" fill="{INK}" fill-opacity="0.28" text-anchor="middle" letter-spacing="5">{cap}</text>')
-    nx = left + (len(weeks) - 1) * step + cell / 2
-    body.append(f'<circle cx="{nx:.1f}" cy="{top + 7 * step + 12}" r="3" fill="{RED_HI}"><animate attributeName="opacity" values="1;0.2;1" dur="1.7s" repeatCount="indefinite"/></circle>')
-    body.append(f'<text x="{nx:.1f}" y="{top + 7 * step + 32}" class="m" font-size="9.5" fill="{RED_HI}" text-anchor="middle" letter-spacing="2">NOW</text>')
+    if weeks:
+        nx = left + (len(weeks) - 1) * step + cell / 2
+        body.append(f'<circle cx="{nx:.1f}" cy="{top + 7 * step + 12}" r="3" fill="{RED_HI}"><animate attributeName="opacity" values="1;0.2;1" dur="1.7s" repeatCount="indefinite"/></circle>')
+        body.append(f'<text x="{nx:.1f}" y="{top + 7 * step + 32}" class="m" font-size="9.5" fill="{RED_HI}" text-anchor="middle" letter-spacing="2">NOW</text>')
 
     rx = left + hw + 62
     body.append(f'<line x1="{rx - 34:.0f}" y1="52" x2="{rx - 34:.0f}" y2="{h - 40}" stroke="{INK}" stroke-opacity="0.08"/>')
     body.append(f'<text x="{rx}" y="{top + 26}" class="s" font-size="54" font-weight="800" fill="{INK}" letter-spacing="-1.5">{total}</text>')
     body.append(f'<text x="{rx}" y="{top + 50}" class="m" font-size="10.5" fill="{MUTED}" letter-spacing="1.2">TOTAL CONTRIBUTIONS</text>')
     bars = [sum(d["contributionCount"] for d in w_["contributionDays"]) for w_ in weeks][-10:]
-    by, bw, maxb = top + 78, 13, max(bars) or 1
+    by, bw, maxb = top + 78, 13, max(bars, default=0) or 1
     for i, v in enumerate(bars):
         bh = max(3, v / maxb * 54)
         body.append(f'<rect x="{rx + i * (bw + 6)}" y="{by + 54:.0f}" width="{bw}" height="0" rx="2" fill="{RED if i < len(bars) - 1 else RED_HI}" opacity="{0.35 + 0.06 * i:.2f}">'
@@ -687,7 +828,9 @@ def activity_asset(weeks: list[dict], total: int) -> None:
 
 def card_asset(idx: int, r: dict) -> None:
     w, h = 624, 238
-    name = r["name"]
+    name = display_name(r)
+    if len(name) > 32:                       # a 100-char repo name must not overflow
+        name = name[:31].rstrip() + "…"
     nsize = 25 if len(name) <= 20 else 20
     kicker = kicker_for(r)
     desc = clean_text(r.get("description") or "") or "Open-source project — details in the repository."
@@ -718,24 +861,17 @@ def card_asset(idx: int, r: dict) -> None:
   <text x="{w - 24}" y="66" class="s" font-size="46" font-weight="800" fill="none" stroke="{INK}" stroke-opacity="0.13"
         text-anchor="end" letter-spacing="-1">{idx:02d}</text>
   <g opacity="0"><animate attributeName="opacity" values="0;1" begin="0.12s" dur="0.5s" fill="freeze"/>
-    <text x="28" y="52" class="m" font-size="{nsize}" font-weight="700" fill="{INK}">{esc(display_name(r))}</text></g>
+    <text x="28" y="52" class="m" font-size="{nsize}" font-weight="700" fill="{INK}">{esc(name)}</text></g>
   <text x="28" y="96" class="m" font-size="12.5" fill="{RED_HI}" letter-spacing="2.6">❯ {esc(kicker)}</text>
   {''.join(f'<text x="28" y="{125 + i * 20}" class="m" font-size="13.6" fill="{DIM}">{esc(ln)}</text>' for i, ln in enumerate(lines))}
   {''.join(pills)}
   <circle cx="32" cy="{h - 20}" r="4" fill="{lcolor}"/>
   <text x="44" y="{h - 16}" class="m" font-size="11.5" fill="{MUTED}">{esc(lang)} {pct}%</text>
   <text x="{w - 28}" y="{h - 16}" class="m" font-size="11" fill="{RED_HI}" text-anchor="end" letter-spacing="1.6">OPEN SOURCE ↗</text>''', defs)
-    return (f'''<defs>
-    <linearGradient id="g{idx}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#251114"/><stop offset="0.5" stop-color="#131217"/><stop offset="1" stop-color="#101014"/>
-    </linearGradient>
-    <pattern id="p{idx}" width="26" height="26" patternUnits="userSpaceOnUse">
-      <path d="M26 0H0V26" stroke="#F2EAD9" stroke-opacity="0.028"/>
-    </pattern>
-  </defs>''')
 
 
 def footer_asset() -> None:
+    year = dt.date.today().year   # never let the copyright year go stale
     write("footer.svg", 1280, 86, f'''
   <line x1="0" y1="0.8" x2="1280" y2="0.8" stroke="{INK}" stroke-opacity="0.10"/>
   <line x1="0" y1="0.8" x2="487" y2="0.8" stroke="{RED}" stroke-width="1.6" opacity="0.7"/>
@@ -743,7 +879,7 @@ def footer_asset() -> None:
         pathLength="100" stroke-dasharray="9 91" stroke-dashoffset="100">
     <animate attributeName="stroke-dashoffset" values="100;0" dur="11s" repeatCount="indefinite"/>
   </line>
-  <text x="0" y="46" class="m" font-size="11.5" fill="{MUTED}" letter-spacing="1.6">© 2025 SAM RONIN</text>
+  <text x="0" y="46" class="m" font-size="11.5" fill="{MUTED}" letter-spacing="1.6">© {year} SAM RONIN</text>
   <text x="336" y="46" class="m" font-size="11.5" fill="{DIM}" letter-spacing="1.7">BUILT WITH INTENT</text>
   <text x="484" y="46" class="m" font-size="11.5" fill="{RED}" letter-spacing="1.7">·</text>
   <text x="500" y="46" class="m" font-size="11.5" fill="{DIM}" letter-spacing="1.7">SHIPPED IN PUBLIC</text>
@@ -758,8 +894,7 @@ def footer_asset() -> None:
 
 # ─────────────────────────────────────────── README
 def build_readme(ctx: dict) -> str:
-    u, repos, cards, extra = ctx["user"], ctx["repos"], ctx["cards"], ctx["extra"]
-    stats, groups = ctx["stats"], ctx["stack"]
+    u, cards, extra = ctx["user"], ctx["cards"], ctx["extra"]
     login = u["login"]
 
     card_cells = []
@@ -776,7 +911,7 @@ def build_readme(ctx: dict) -> str:
 
     also_rows = "\n".join(
         f'| **[{esc(display_name(r))}](https://github.com/{login}/{r["name"]})** | '
-        f'{esc(clean_text(r.get("description") or "")[:96] or "—")} | `{esc(r.get("language") or "—")}` |'
+        f'{md_cell(r.get("description") or "")} | `{esc(r.get("language") or "—")}` |'
         for r in extra[:12])
     also = (f"""
 <details>
@@ -791,12 +926,10 @@ def build_readme(ctx: dict) -> str:
 
     cur = []
     for r in cards[:3]:
-        d = (r.get("description") or "").split(".")[0][:62]
-        cur.append(f'  ▸ shipping   {r["name"]:<14} {d}')
+        cur.append(f'  ▸ shipping   {r["name"]:<14} {clip(r.get("description") or "", 44)}')
     cur.append(f'  ▸ learning   Rust          ownership, memory model, zero-cost abstractions')
     cur.append(f'  ▸ open to    collabs       local-first tools, RTL/Persian UX, MV3 extensions')
 
-    s = {x[1]: x[0] for x in stats}
     return f'''<div align="center">
   <img src="assets/banner.svg" alt="Sam Ronin — Code Ronin" width="100%" />
 </div>
@@ -916,16 +1049,21 @@ sam@ronin:~$ status
 def build_summary(ctx: dict) -> str:
     u, cards = ctx["user"], ctx["cards"]
     langs = ctx["stack"][0][1]
+
+    def one(s: Any) -> str:
+        # single line, no stray markup — keeps the markdown valid
+        return re.sub(r"\s+", " ", re.sub(r"<[^>]*>", "", str(s or "—"))).strip() or "—"
+
     lines = [
-        f"# {u.get('name') or u['login']} — profile snapshot",
+        f"# {one(u.get('name') or u['login'])} — profile snapshot",
         "",
         f"> Auto-generated from public GitHub data on every scheduled build.",
         "",
         f"- **Handle:** [{u['login']}](https://github.com/{u['login']})",
-        f"- **Bio:** {u.get('bio') or '—'}",
-        f"- **Location:** {u.get('location') or '—'}",
-        f"- **Public repos:** {len(ctx['repos'])}",
-        f"- **Contributions (52w):** {data_total(ctx)}",
+        f"- **Bio:** {one(u.get('bio'))}",
+        f"- **Location:** {one(u.get('location'))}",
+        f"- **Public repos:** {int(u.get('public_repos') or len(ctx['repos']))}",
+        f"- **Contributions (52w):** {ctx['total_contribs']}",
         f"- **Core languages:** {', '.join(langs)}",
         "",
         "## What he builds",
@@ -939,19 +1077,70 @@ def build_summary(ctx: dict) -> str:
     ]
     for r in cards:
         lines.append(f"- **[{r['name']}](https://github.com/{u['login']}/{r['name']})** — "
-                     f"{(r.get('description') or '').strip()}")
+                     f"{one(r.get('description'))}")
     if ctx["extra"]:
         lines += ["", "## Other public repos", ""]
         for r in ctx["extra"][:12]:
-            lines.append(f"- `{r['name']}` — {(r.get('description') or '—')[:90]}")
+            lines.append(f"- `{r['name']}` — {one(r.get('description'))[:90]}")
     return "\n".join(lines) + "\n"
 
 
-def data_total(ctx: dict) -> int:
-    return ctx["total_contribs"]
-
-
 # ─────────────────────────────────────────── main
+def assign_slugs(repos: list[dict]) -> None:
+    """Filesystem-safe, UNIQUE card slugs (a collision would overwrite a card)."""
+    used: set[str] = set()
+    for r in repos:
+        slug = re.sub(r"[^a-z0-9]+", "_", r["name"].lower()).strip("_")[:32] or "repo"
+        base, n = slug, 2
+        while slug in used:
+            slug = f"{base[:29]}_{n}"
+            n += 1
+        used.add(slug)
+        r["_slug"] = slug
+
+
+def check_leaks(readme: str, summary: str, private_names: list[str]) -> list[str]:
+    """Private repo names must never reach the public output (case-insensitive)."""
+    haystack = (readme + "\n" + summary).casefold()
+    return [n for n in private_names if n and len(n) > 2 and n.casefold() in haystack]
+
+
+def validate_assets() -> None:
+    """Every published SVG must be well-formed XML — fail loudly, ship nothing broken."""
+    for f in sorted(os.listdir(ASSETS)):
+        if f.endswith(".svg"):
+            ET.parse(os.path.join(ASSETS, f))
+
+
+def handle_fetch_error(e: Exception) -> tuple[int, str]:
+    """Map a fetch failure to (exit_code, CI message).
+
+    Auth and rate-limit problems leave the existing profile untouched (exit 0
+    with a visible warning — a scheduled run must never wipe the profile),
+    while config errors, unknown users and network failures fail the run
+    loudly so CI never reports a false success.
+    """
+    if isinstance(e, TokenMissing):
+        return 0, ("::warning::no GitHub token — profile left unchanged. "
+                   "Add a read-only PROFILE_TOKEN secret to enable updates.")
+    if isinstance(e, urllib.error.HTTPError):
+        if e.code == 404:
+            return 1, "::error::GitHub user not found — check PROFILE_LOGIN / --login."
+        if e.code == 401:
+            return 0, ("::warning::GitHub API rejected the token (401) — profile left unchanged. "
+                       "Replace the PROFILE_TOKEN secret with a valid read-only token.")
+        if e.code == 403 and not _rate_limited(e):
+            return 0, ("::warning::GitHub API rejected the token (403) — profile left unchanged. "
+                       "Replace the PROFILE_TOKEN secret with a valid read-only token.")
+        if e.code in (403, 429):
+            return 0, ("::warning::GitHub API rate limit exhausted — profile left unchanged. "
+                       "The next scheduled run will retry.")
+        return 1, f"::error::GitHub API HTTP {e.code} — failing the run."
+    if isinstance(e, (urllib.error.URLError, TimeoutError, ConnectionError, OSError)):
+        return 1, f"::error::network failure talking to GitHub: {e}"
+    return 1, f"::error::{type(e).__name__}: {e}"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--login", default=os.environ.get("PROFILE_LOGIN", "SamRonin"))
@@ -960,17 +1149,19 @@ def main() -> int:
 
     try:
         data = fetch(args.login, token)
-    except urllib.error.HTTPError as e:
-        if e.code in (401, 403):
-            # an expired/revoked token must never break the scheduled job:
-            # leave the profile exactly as it is and report it once
-            print(f"::warning::GitHub API rejected the token ({e.code}) — profile left unchanged. "
-                  f"Replace the PROFILE_TOKEN secret with a valid read-only token.")
-            return 0
-        raise
+    except (TokenMissing, urllib.error.HTTPError, urllib.error.URLError,
+            TimeoutError, ConnectionError) as e:
+        code, msg = handle_fetch_error(e)
+        print(msg)
+        return code
+
+    try:
+        est_year = dt.date.fromisoformat(str(data["user"]["created_at"])[:10]).year
+    except Exception:
+        est_year = dt.date.today().year
+
     repos = rank_repos(data["repos"])
-    for r in repos:
-        r["_slug"] = re.sub(r"[^a-z0-9]+", "_", r["name"].lower()).strip("_")[:32]
+    assign_slugs(repos)
 
     ordered = sorted(repos, key=rank_key)
     cards = [r for r in ordered if is_featurable(r)][:4] or ordered[:4]
@@ -985,7 +1176,7 @@ def main() -> int:
     }
 
     # assets
-    banner(); divider(); typing(); footer_asset()
+    banner(est_year); divider(); typing(); footer_asset()
     stats_asset(ctx["stats"]); stack_asset(ctx["stack"])
     activity_asset(data["weeks"], data["total_contribs"])
     for i, r in enumerate(cards, start=1):
@@ -998,15 +1189,19 @@ def main() -> int:
 
     # README + machine-readable summary
     readme = build_readme(ctx)
+    summary = build_summary(ctx)
     with open(os.path.join(ROOT, "README.md"), "w", encoding="utf-8") as f:
         f.write(readme)
     with open(os.path.join(ROOT, "summary.md"), "w", encoding="utf-8") as f:
-        f.write(build_summary(ctx))
+        f.write(summary)
+
+    # every published SVG must be well-formed XML — fail the run, not the profile
+    validate_assets()
 
     # ── guard: nothing private may ever reach the output
-    leaks = [n for n in data["private_names"] if n and len(n) > 2 and n in readme]
+    leaks = check_leaks(readme, summary, data["private_names"])
     if leaks:
-        print(f"::error::private repository named in README: {leaks}", file=sys.stderr)
+        print(f"::error::private repository name reached the output: {leaks}", file=sys.stderr)
         return 1
 
     print(f"ok · {len(repos)} public repos · {len(cards)} cards · "
