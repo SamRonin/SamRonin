@@ -11,7 +11,7 @@
 
   [![Local-first](https://img.shields.io/badge/LOCAL--FIRST-100%25-E63946?style=flat-square&labelColor=101014)](#)
   [![Telemetry](https://img.shields.io/badge/TELEMETRY-ZERO-E63946?style=flat-square&labelColor=101014)](#)
-  [![Ship](https://img.shields.io/badge/SHIPPING-IN%20PUBLIC-E63946?style=flat-square&labelColor=101014)](#)
+  [![Repos](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fusers%2FSamRonin&query=%24.public_repos&label=PUBLIC%20REPOS&style=flat-square&labelColor=101014&color=F2EAD9)](#)
   [![Location](https://img.shields.io/badge/TEHRAN-IRAN-F2EAD9?style=flat-square&labelColor=101014)](#)
   [![Followers](https://img.shields.io/github/followers/SamRonin?style=flat-square&labelColor=101014&color=F2EAD9&logo=github&logoColor=F2EAD9)](https://github.com/SamRonin?tab=followers)
   [![Last commit](https://img.shields.io/github/last-commit/SamRonin/SamRonin?style=flat-square&labelColor=101014&color=E63946)](https://github.com/SamRonin/SamRonin/commits/main)
@@ -44,22 +44,13 @@ Most of my work lives where **the browser** meets **native performance**: Chrome
 
 ## <img src="https://api.iconify.design/lucide/package.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Featured work
 
+<!-- AUTO:FEATURED — regenerated from the GitHub API by .github/workflows/update-profile.yml -->
 <table>
   <tr>
-    <td width="50%" valign="top">
-      <a href="https://github.com/SamRonin/Page2LLM"><img src="assets/card_page2llm.svg" alt="Page2LLM" width="100%" /></a>
-    </td>
-    <td width="50%" valign="top">
-      <a href="https://github.com/SamRonin/dropshrink"><img src="assets/card_dropshrink.svg" alt="DropShrink" width="100%" /></a>
-    </td>
+    <td width="50%" valign="top"><a href="https://github.com/SamRonin/downwise"><img src="assets/card_downwise.svg" alt="downwise" width="100%" /></a></td><td width="50%" valign="top"><a href="https://github.com/SamRonin/dropshrink"><img src="assets/card_dropshrink.svg" alt="dropshrink" width="100%" /></a></td>
   </tr>
   <tr>
-    <td width="50%" valign="top">
-      <a href="https://github.com/SamRonin/downwise"><img src="assets/card_downwise.svg" alt="DownWise" width="100%" /></a>
-    </td>
-    <td width="50%" valign="top">
-      <a href="https://github.com/SamRonin/profilepack"><img src="assets/card_profilepack.svg" alt="ProfilePack" width="100%" /></a>
-    </td>
+    <td width="50%" valign="top"><a href="https://github.com/SamRonin/Page2LLM"><img src="assets/card_page2llm.svg" alt="Page2LLM" width="100%" /></a></td><td width="50%" valign="top"><a href="https://github.com/SamRonin/profilepack"><img src="assets/card_profilepack.svg" alt="profilepack" width="100%" /></a></td>
   </tr>
 </table>
 
@@ -97,10 +88,9 @@ Most of my work lives where **the browser** meets **native performance**: Chrome
 ```console
 sam@ronin:~$ status
 
-  ▸ building   DropShrink    Tauri v2 · Rust · FFmpeg · offline media compression
-  ▸ polishing  Page2LLM      LLM-ready Markdown extraction, 100% in-browser
-  ▸ polishing  DownWise      right-click download & real file conversion
-  ▸ testing    ProfilePack   synthetic personas for local-first form QA
+  ▸ shipping   downwise       ⬇️ Smart right-click downloader & real file converter for Chro
+  ▸ shipping   dropshrink     🎬 Fast, offline drag-and-drop video & image compressor powered
+  ▸ shipping   Page2LLM       Extract clean, structured page text as Markdown, ready for LLM
   ▸ learning   Rust          ownership, memory model, zero-cost abstractions
   ▸ open to    collabs       local-first tools, RTL/Persian UX, MV3 extensions
 ```
@@ -117,7 +107,7 @@ sam@ronin:~$ status
   </a>
   &nbsp;
   <a href="https://github.com/SamRonin?tab=stars">
-    <img src="https://img.shields.io/badge/STARRED-REPOS-E63946?style=for-the-badge&labelColor=101014&logo=starship&logoColor=F2EAD9" height="34" />
+    <img src="https://img.shields.io/badge/STARRED-REPOS-E63946?style=for-the-badge&labelColor=101014&logo=github&logoColor=F2EAD9" height="34" />
   </a>
   &nbsp;
   <a href="https://github.com/SamRonin?tab=followers">

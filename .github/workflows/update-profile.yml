@@ -1,0 +1,67 @@
+name: Update profile
+
+on:
+  schedule:
+    # every 6 hours; GitHub may run it a few minutes late during peak hours
+    - cron: "17 */6 * * *"
+  workflow_dispatch:        # manual trigger from the Actions tab
+  push:
+    branches: [main]
+    paths:                  # re-render if the generator itself changes
+      - "scripts/profile.py"
+      - ".github/workflows/update-profile.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profile-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Regenerate assets and README from live GitHub data
+        env:
+          # a repo-scoped token; only needs read access to public data,
+          # but a PAT also lifts the anonymous API rate limit
+          GITHUB_TOKEN: ${{ secrets.PROFILE_TOKEN }}
+          PROFILE_LOGIN: SamRonin
+        run: python3 scripts/profile.py
+
+      - name: Validate every generated SVG
+        run: |
+          python3 - <<'PY'
+          import glob, sys, xml.etree.ElementTree as ET
+          bad = []
+          for f in sorted(glob.glob("assets/*.svg")):
+              try:
+                  ET.parse(f)
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          if bad:
+              print("\n".join(bad))
+              sys.exit(1)
+          print(f"all {len(glob.glob('assets/*.svg'))} SVG assets are well-formed")
+          PY
+
+      - name: Commit if anything actually changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A README.md summary.md assets/
+          if git diff --cached --quiet; then
+            echo "profile is already up to date — nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore(profile): auto-refresh from GitHub API [skip ci]"
+          git push

@@ -1,1 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="46" viewBox="0 0 1280 46" fill="none" role="img" aria-label="SamRonin profile asset"><defs></defs><style>.m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace}.s{font-family:Inter,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif}</style><rect width="1280" height="46" fill="none"/><line x1="0" y1="23" x2="560" y2="23" stroke="#F2EAD9" stroke-opacity="0.13" stroke-width="1"/><line x1="720" y1="23" x2="1280" y2="23" stroke="#F2EAD9" stroke-opacity="0.13" stroke-width="1"/><line x1="0" y1="23" x2="1280" y2="23" stroke="#E63946" stroke-width="1.6" pathLength="1" stroke-dasharray="0.18 0.82" stroke-dashoffset="1" opacity="0.9"><animate attributeName="stroke-dashoffset" values="1;0" dur="2.2s" fill="freeze"/></line><path d="M640 8 L655 23 L640 38 L625 23 Z" fill="#E63946"><animate attributeName="opacity" values="1;0.45;1" dur="3.4s" repeatCount="indefinite"/></path><path d="M640 14 L649 23 L640 32 L631 23 Z" fill="#0B0B0D"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="46" viewBox="0 0 1280 46" fill="none" role="img" aria-label="SamRonin profile asset"><defs></defs><style>.m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace}.s{font-family:Inter,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif}</style>
+  <line x1="0" y1="23" x2="560" y2="23" stroke="#F2EAD9" stroke-opacity="0.12"/>
+  <line x1="720" y1="23" x2="1280" y2="23" stroke="#F2EAD9" stroke-opacity="0.12"/>
+  <line x1="0" y1="23" x2="1280" y2="23" stroke="#E63946" stroke-opacity="0.13" stroke-width="1.4"/>
+  <line x1="0" y1="23" x2="1280" y2="23" stroke="#E63946" stroke-width="2" stroke-linecap="round"
+        pathLength="100" stroke-dasharray="11 89" stroke-dashoffset="100">
+    <animate attributeName="stroke-dashoffset" values="100;0" dur="7s" repeatCount="indefinite"/>
+  </line>
+  <line x1="0" y1="23" x2="1280" y2="23" stroke="#FF4D5A" stroke-width="1.3" stroke-linecap="round" opacity="0.75"
+        pathLength="100" stroke-dasharray="3 97" stroke-dashoffset="100">
+    <animate attributeName="stroke-dashoffset" values="100;0" dur="7s" begin="-3.2s" repeatCount="indefinite"/>
+  </line>
+  <path d="M640 8 L655 23 L640 38 L625 23 Z" fill="#E63946">
+    <animate attributeName="fill-opacity" values="1;0.45;1" dur="3.4s" repeatCount="indefinite"/>
+  </path>
+  <path d="M640 14 L649 23 L640 32 L631 23 Z" fill="#0B0B0D"/></svg>
