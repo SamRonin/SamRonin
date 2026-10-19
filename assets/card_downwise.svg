@@ -13,7 +13,7 @@
   <g opacity="0"><animate attributeName="opacity" values="0;1" begin="0.12s" dur="0.5s" fill="freeze"/>
     <text x="28" y="52" class="m" font-size="25" font-weight="700" fill="#F2EAD9">DownWise</text></g>
   <text x="28" y="96" class="m" font-size="12.5" fill="#FF4D5A" letter-spacing="2.6">❯ CHROME EXTENSION · MV3</text>
-  <text x="28" y="125" class="m" font-size="13.6" fill="#B9B3A5">Smart right-click downloader &amp; real file converter for Chrome (MV3)</text>
+  <text x="28" y="125" class="m" font-size="13.6" fill="#B9B3A5">Smart right-click downloader &amp; real file converter for Chrome.</text><text x="28" y="145" class="m" font-size="13.6" fill="#B9B3A5">Bilingual, dark-mode first, zero telemetry.</text>
   <rect x="28" y="176" width="99" height="24" rx="6" fill="#E63946" fill-opacity="0.10" stroke="#E63946" stroke-opacity="0.30"/><text x="78" y="192.5" class="m" font-size="11" fill="#FF7A84" text-anchor="middle" letter-spacing="1.1">CHROME MV3</text><rect x="134" y="176" width="91" height="24" rx="6" fill="#E63946" fill-opacity="0.10" stroke="#E63946" stroke-opacity="0.30"/><text x="180" y="192.5" class="m" font-size="11" fill="#FF7A84" text-anchor="middle" letter-spacing="1.1">DARK MODE</text><rect x="232" y="176" width="99" height="24" rx="6" fill="#E63946" fill-opacity="0.10" stroke="#E63946" stroke-opacity="0.30"/><text x="282" y="192.5" class="m" font-size="11" fill="#FF7A84" text-anchor="middle" letter-spacing="1.1">DOWNLOADER</text>
   <circle cx="32" cy="218" r="4" fill="#F1E05A"/>
   <text x="44" y="222" class="m" font-size="11.5" fill="#8C8779">JavaScript 79%</text>
