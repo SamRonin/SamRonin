@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" fill="none" role="img" aria-label="Sam Ronin — Code Ronin">
+  <defs>
+    <radialGradient id="sunG" cx="42%" cy="34%" r="72%">
+      <stop offset="0" stop-color="#FF5A68"/>
+      <stop offset="0.55" stop-color="#D62828"/>
+      <stop offset="1" stop-color="#7E1111"/>
+    </radialGradient>
+    <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#44171A"/>
+      <stop offset="0.5" stop-color="#180C0D"/>
+      <stop offset="1" stop-color="#0B0B0D"/>
+    </radialGradient>
+    <pattern id="gridP" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#F2EAD9" stroke-opacity="0.035" stroke-width="1"/>
+    </pattern>
+    <clipPath id="frameClip"><rect width="1280" height="420" rx="18"/></clipPath>
+    <clipPath id="sunClip"><circle cx="0" cy="0" r="112"/></clipPath>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
+    <style>
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+      .sans{font-family:Inter,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif}
+      .jp{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","Noto Sans JP",serif}
+    </style>
+  </defs>
+
+  <g clip-path="url(#frameClip)">
+    <rect width="1280" height="420" fill="#0B0B0D"/>
+    <rect width="1280" height="420" fill="url(#gridP)"/>
+    
+
+    <!-- rising sun -->
+    <g>
+      <circle cx="1132" cy="210" r="212" fill="url(#haloG)">
+        <animate attributeName="opacity" values="0.55;1;0.55" dur="7s" repeatCount="indefinite"/>
+      </circle>
+      <g transform="translate(1132 210) scale(0.8)">
+        <g>
+          <animateTransform attributeName="transform" type="scale" values="0.86;1" begin="0.15s" dur="1.1s" fill="freeze" calcMode="spline" keySplines="0.16 0.9 0.2 1" keyTimes="0;1"/>
+          <g opacity="0">
+            <animate attributeName="opacity" values="0;1" begin="0.15s" dur="0.9s" fill="freeze"/>
+            <circle cx="0" cy="0" r="112" fill="url(#sunG)"/>
+            <g clip-path="url(#sunClip)" opacity="0.13">
+              <g fill="#0B0B0D">
+                <rect x="-120" y="-112" width="240" height="1.6"/>
+                <rect x="-120" y="-104" width="240" height="1.6"/>
+                <rect x="-120" y="-96" width="240" height="1.6"/>
+                <rect x="-120" y="-88" width="240" height="1.6"/>
+                <rect x="-120" y="-80" width="240" height="1.6"/>
+                <rect x="-120" y="-72" width="240" height="1.6"/>
+                <rect x="-120" y="-64" width="240" height="1.6"/>
+                <rect x="-120" y="-56" width="240" height="1.6"/>
+                <rect x="-120" y="-48" width="240" height="1.6"/>
+                <rect x="-120" y="-40" width="240" height="1.6"/>
+                <rect x="-120" y="-32" width="240" height="1.6"/>
+                <rect x="-120" y="-24" width="240" height="1.6"/>
+                <rect x="-120" y="-16" width="240" height="1.6"/>
+                <rect x="-120" y="-8" width="240" height="1.6"/>
+                <rect x="-120" y="0" width="240" height="1.6"/>
+                <rect x="-120" y="8" width="240" height="1.6"/>
+                <rect x="-120" y="16" width="240" height="1.6"/>
+                <rect x="-120" y="24" width="240" height="1.6"/>
+                <rect x="-120" y="32" width="240" height="1.6"/>
+                <rect x="-120" y="40" width="240" height="1.6"/>
+                <rect x="-120" y="48" width="240" height="1.6"/>
+                <rect x="-120" y="56" width="240" height="1.6"/>
+                <rect x="-120" y="64" width="240" height="1.6"/>
+                <rect x="-120" y="72" width="240" height="1.6"/>
+                <rect x="-120" y="80" width="240" height="1.6"/>
+                <rect x="-120" y="88" width="240" height="1.6"/>
+                <rect x="-120" y="96" width="240" height="1.6"/>
+                <rect x="-120" y="104" width="240" height="1.6"/>
+                <rect x="-120" y="112" width="240" height="1.6"/>
+              </g>
+            </g>
+            <circle cx="0" cy="0" r="112" fill="none" stroke="#F2EAD9" stroke-opacity="0.35" stroke-width="1"/>
+          </g>
+        </g>
+        <!-- radar ring -->
+        <circle cx="0" cy="0" r="148" fill="none" stroke="#E63946" stroke-opacity="0.55" stroke-width="1.4"
+                pathLength="1" stroke-dasharray="0.62 0.38" stroke-dashoffset="1">
+          <animate attributeName="stroke-dashoffset" values="1;0" begin="0.45s" dur="1.6s" fill="freeze"/>
+          <animateTransform attributeName="transform" type="rotate" values="0;360" dur="60s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="0" cy="0" r="166" fill="none" stroke="#F2EAD9" stroke-opacity="0.08" stroke-width="1"/>
+      </g>
+      <!-- katana slash across the sun -->
+      <g clip-path="url(#sunClip)" transform="translate(1132 210) scale(0.8)">
+        <rect x="-148" y="-1.7" width="0" height="3.4" fill="#F2EAD9" opacity="0.9" transform="rotate(-16)">
+          <animate attributeName="width" values="0;300" begin="0.9s" dur="0.55s" fill="freeze"/>
+          <animate attributeName="opacity" values="0.95;0.7;0.95" dur="5s" repeatCount="indefinite"/>
+        </rect>
+        <rect x="-148" y="2.2" width="300" height="1.2" fill="#FF8A93" opacity="0.55" transform="rotate(-16)">
+          <animate attributeName="width" values="0;300" begin="1.05s" dur="0.6s" fill="freeze"/>
+        </rect>
+      </g>
+      <!-- circuit traces -->
+      <g stroke="#E63946" stroke-width="1.4" fill="none" opacity="0.55">
+        <path d="M1246 150h-26v-46" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
+          <animate attributeName="stroke-dashoffset" values="1;0" begin="1.2s" dur="0.9s" fill="freeze"/>
+        </path>
+        <path d="M1250 286h-24v54" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
+          <animate attributeName="stroke-dashoffset" values="1;0" begin="1.45s" dur="0.9s" fill="freeze"/>
+        </path>
+        <path d="M1132 330v52h64" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
+          <animate attributeName="stroke-dashoffset" values="1;0" begin="1.7s" dur="0.9s" fill="freeze"/>
+        </path>
+      </g>
+      <g fill="#F2EAD9">
+        <circle cx="1266" cy="104" r="3.4"><animate attributeName="opacity" values="0.25;1;0.25" dur="2.6s" repeatCount="indefinite"/></circle>
+        <circle cx="1246" cy="328" r="3.4"><animate attributeName="opacity" values="0.25;1;0.25" dur="3.1s" begin="0.4s" repeatCount="indefinite"/></circle>
+        <circle cx="1116" cy="396" r="3.4"><animate attributeName="opacity" values="0.25;1;0.25" dur="2.2s" begin="0.8s" repeatCount="indefinite"/></circle>
+      </g>
+    </g>
+
+    <!-- overline -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" begin="0.2s" dur="0.6s" fill="freeze"/>
+      <rect x="76" y="78" width="22" height="2" fill="#E63946"/>
+      <text x="110" y="92" class="mono" font-size="14" fill="#E63946" letter-spacing="6.5">// CODE RONIN</text>
+      <text x="420" y="92" class="mono" font-size="11" fill="#8C8779" letter-spacing="3">EST. 2025</text>
+    </g>
+
+    <!-- title -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" begin="0.5s" dur="0.7s" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 26;0 0" begin="0.5s" dur="0.8s" fill="freeze" calcMode="spline" keySplines="0.2 0.85 0.2 1" keyTimes="0;1"/>
+      <text x="76" y="204" class="sans" font-size="106" font-weight="800" fill="#F2EAD9" letter-spacing="8">SAM</text>
+      <polygon points="348,204 365,204 398,96 381,96" fill="#E63946"/>
+      <text x="408" y="204" class="sans" font-size="106" font-weight="800" fill="#F2EAD9" fill-opacity="0.07" stroke="#F2EAD9" stroke-width="2" letter-spacing="8">RONIN</text>
+    </g>
+
+    <!-- rule -->
+    <rect x="76" y="236" width="132" height="3" fill="#E63946">
+      <animate attributeName="width" values="0;132" begin="0.95s" dur="0.6s" fill="freeze"/>
+    </rect>
+    <rect x="216" y="237.4" width="540" height="1" fill="#F2EAD9" opacity="0.12">
+      <animate attributeName="width" values="0;540" begin="1.1s" dur="0.8s" fill="freeze"/>
+    </rect>
+
+    <!-- sub -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" begin="1.05s" dur="0.7s" fill="freeze"/>
+      <text x="76" y="278" class="mono" font-size="19" fill="#FF4D5A">❯</text>
+      <text x="104" y="278" class="mono" font-size="18" fill="#B9B3A5" letter-spacing="0.4">local-first systems · zero telemetry · persian-first UI</text>
+    </g>
+
+    <!-- footer meta -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" begin="1.3s" dur="0.7s" fill="freeze"/>
+      <text x="76" y="356" class="mono" font-size="12.5" fill="#8C8779" letter-spacing="2.4">TEHRAN · IRAN <tspan fill="#E63946">//</tspan> BUILDING SINCE 2025 <tspan fill="#E63946">//</tspan> SHIPPING IN PUBLIC</text>
+      <text x="1204" y="56" class="mono" font-size="11" fill="#8C8779" letter-spacing="2.2" text-anchor="end">SYSTEM <tspan fill="#FF4D5A">ONLINE</tspan></text>
+      <circle cx="1204" cy="72" r="2.6" fill="#FF4D5A">
+        <animate attributeName="opacity" values="1;0.15;1" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- line scan -->
+    <line x1="0" y1="0" x2="1280" y2="0" stroke="#FF4D5A" stroke-width="1.6" opacity="0">
+      <animate attributeName="y1" values="-4;422" dur="6.5s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="-4;422" dur="6.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.40;0.40;0" keyTimes="0;0.06;0.9;1" dur="6.5s" repeatCount="indefinite"/>
+    </line>
+
+    <g stroke="#F2EAD9" stroke-opacity="0.22" stroke-width="1.4" fill="none">
+      <path d="M24 46v-22h22"/><path d="M1256 374v22h-22"/>
+    </g>
+    <rect x="0.75" y="0.75" width="1278.5" height="418.5" rx="17.5" fill="none" stroke="#F2EAD9" stroke-opacity="0.1" stroke-width="1.5"/>
+  </g>
+</svg>
