@@ -20,7 +20,7 @@
 
 <img src="assets/divider.svg" alt="" width="100%" />
 
-## <img src="https://api.iconify.design/lucide:swords.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;浪人 &nbsp;·&nbsp; The short version
+## <img src="https://api.iconify.design/lucide/swords.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;RONIN &nbsp;·&nbsp; The short version
 
 I build **local-first, privacy-first tools** and ship them in public. No telemetry, no accounts, no cloud round-trips — the file stays on your machine, the data stays in your browser. If a feature needs the network, it earns that need first.
 
@@ -36,13 +36,13 @@ Most of my work lives where **the browser** meets **native performance**: Chrome
 
 <img src="assets/divider.svg" alt="" width="100%" />
 
-## <img src="https://api.iconify.design/lucide:layers.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Arsenal
+## <img src="https://api.iconify.design/lucide/layers.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Arsenal
 
 <img src="assets/stack.svg" alt="tech stack" width="100%" />
 
 <img src="assets/divider.svg" alt="" width="100%" />
 
-## <img src="https://api.iconify.design/lucide:package.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Featured work
+## <img src="https://api.iconify.design/lucide/package.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Featured work
 
 <table>
   <tr>
@@ -65,13 +65,13 @@ Most of my work lives where **the browser** meets **native performance**: Chrome
 
 <img src="assets/divider.svg" alt="" width="100%" />
 
-## <img src="https://api.iconify.design/lucide:activity.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// The record
+## <img src="https://api.iconify.design/lucide/activity.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// The record
 
 <img src="assets/activity.svg" alt="contribution activity" width="100%" />
 
 <img src="assets/divider.svg" alt="" width="100%" />
 
-## <img src="https://api.iconify.design/lucide:compass.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Code of the road
+## <img src="https://api.iconify.design/lucide/compass.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Code of the road
 
 <table>
   <tr>
@@ -92,7 +92,7 @@ Most of my work lives where **the browser** meets **native performance**: Chrome
 
 <img src="assets/divider.svg" alt="" width="100%" />
 
-## <img src="https://api.iconify.design/lucide:terminal.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Currently
+## <img src="https://api.iconify.design/lucide/terminal.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Currently
 
 ```console
 sam@ronin:~$ status
@@ -107,7 +107,7 @@ sam@ronin:~$ status
 
 <img src="assets/divider.svg" alt="" width="100%" />
 
-## <img src="https://api.iconify.design/lucide:send.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Reach out
+## <img src="https://api.iconify.design/lucide/send.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Reach out
 
 <div align="center">
   <p>Got a local-first idea, an RTL interface that deserves better, or an extension that should exist? Open an issue on any repo — that's my inbox.</p>
@@ -130,5 +130,5 @@ sam@ronin:~$ status
 <div align="center">
   <img src="assets/footer.svg" alt="" width="100%" />
   <br /><br />
-  <samp>浪人 &nbsp;·&nbsp; build things &nbsp;·&nbsp; keep them local</samp>
+  <samp>RONIN &nbsp;·&nbsp; build things &nbsp;·&nbsp; keep them local</samp>
 </div>
