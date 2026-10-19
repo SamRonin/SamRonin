@@ -958,7 +958,16 @@ def main() -> int:
     args = ap.parse_args()
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
 
-    data = fetch(args.login, token)
+    try:
+        data = fetch(args.login, token)
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            # an expired/revoked token must never break the scheduled job:
+            # leave the profile exactly as it is and report it once
+            print(f"::warning::GitHub API rejected the token ({e.code}) — profile left unchanged. "
+                  f"Replace the PROFILE_TOKEN secret with a valid read-only token.")
+            return 0
+        raise
     repos = rank_repos(data["repos"])
     for r in repos:
         r["_slug"] = re.sub(r"[^a-z0-9]+", "_", r["name"].lower()).strip("_")[:32]
