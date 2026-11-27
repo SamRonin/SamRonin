@@ -97,24 +97,6 @@ sam@ronin:~$ status
 
 <img src="assets/divider.svg" alt="" width="100%" />
 
-## <img src="https://api.iconify.design/lucide/bookmark.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Craft & bookmarks
-
-A living shelf of UI systems, motion studies, shaders, and local-first tools I keep close for reference.
-
-<details>
-<summary><b>Browse the shelf (29 curated resources)</b></summary>
-
-| Category | Resources |
-|---|---|
-| **Persian & RTL-first** | [VibeFarsi UI](https://vibefarsi.ir) ([source](https://github.com/TronIsHere/vibafarsiui)) · [Animation Handbook](https://matinmonshizadeh.github.io/animation-handbook) |
-| **Local-first & AI / Voice** | [LocalMode.ai](https://localmode.ai) · [ThinkingOrbs](https://github.com/haplollc/ThinkingOrbs) · [Libraries Voice](https://libraries.dev/voice) · [Driver.js](https://driverjs.com) |
-| **Motion, Shaders & Micro-UX** | [SmoothUI](https://smoothui.dev) · [Microinteractions](https://microinteractions.dev) · [D3Motion](https://d3motion.pro/resources) · [Dissolve](https://dissolve.rselmi.com) · [Liquid Glass](https://liquid-glass-interface.pages.dev) ([source](https://github.com/bilalgursen/liquid-glass)) · [UseLayouts](https://uselayouts.com) · [Bencho](https://bencho.dev) · [Arlan Vault](https://www.arlan.me/vault) · [Amir Mushich Form](https://form.amirmushich.com) |
-| **UI Kits & Components** | [shadcn.io](https://shadcn.io) · [shadcn/ui Blocks](https://shadcnui-blocks.com) · [Blocks.so](https://blocks.so) · [ReUI](https://reui.io) ([components](https://reui.io/components)) · [RareUI](https://rareui.com/components) · [HyperUI](https://www.hyperui.dev) · [Headless UI](https://headlessui.com) · [Kumo UI](https://kumo-ui.com) · [Componentry](https://componentry.dev) · [Appica UI](https://appica.dev/ui) · [QuixStudio](https://quixstudio.net/free/components#progress) · [Gauge UI](https://www.gauge-ui.dev) · [React Icons](https://react-icons.github.io/react-icons) |
-
-</details>
-
-<img src="assets/divider.svg" alt="" width="100%" />
-
 ## <img src="https://api.iconify.design/lucide/send.svg?color=%23E63946" width="22" valign="middle" /> &nbsp;// Reach out
 
 <div align="center">
