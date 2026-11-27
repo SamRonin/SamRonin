@@ -50,7 +50,7 @@ Most of my work lives where **the browser** meets **native performance**: Chrome
     <td width="50%" valign="top"><a href="https://github.com/SamRonin/dropshrink"><img src="assets/card_dropshrink.svg" alt="dropshrink" width="100%" /></a></td><td width="50%" valign="top"><a href="https://github.com/SamRonin/downwise"><img src="assets/card_downwise.svg" alt="downwise" width="100%" /></a></td>
   </tr>
   <tr>
-    <td width="50%" valign="top"><a href="https://github.com/SamRonin/Page2LLM"><img src="assets/card_page2llm.svg" alt="Page2LLM" width="100%" /></a></td><td width="50%" valign="top"><a href="https://github.com/SamRonin/profilepack"><img src="assets/card_profilepack.svg" alt="profilepack" width="100%" /></a></td>
+    <td width="50%" valign="top"><a href="https://github.com/SamRonin/profilepack"><img src="assets/card_profilepack.svg" alt="profilepack" width="100%" /></a></td><td width="50%" valign="top"><a href="https://github.com/SamRonin/Page2LLM"><img src="assets/card_page2llm.svg" alt="Page2LLM" width="100%" /></a></td>
   </tr>
 </table>
 
@@ -90,7 +90,7 @@ sam@ronin:~$ status
 
   ▸ shipping   dropshrink     Fast, offline drag-and-drop video & image…
   ▸ shipping   downwise       Smart right-click downloader & real file…
-  ▸ shipping   Page2LLM       Extract clean, structured page text as…
+  ▸ shipping   profilepack    Build one synthetic test persona. Reuse it…
   ▸ learning   Rust          ownership, memory model, zero-cost abstractions
   ▸ open to    collabs       local-first tools, RTL/Persian UX, MV3 extensions
 ```
