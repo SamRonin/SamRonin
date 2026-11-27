@@ -534,55 +534,35 @@ def banner(est_year: int | None = None) -> None:
     <rect width="1280" height="420" fill="#0B0B0D"/>
     <rect width="1280" height="420" fill="url(#gridP)"/>
     <circle cx="1132" cy="210" r="212" fill="url(#haloG)">
-      <animate attributeName="opacity" values="0.55;1;0.55" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.95;0.5" dur="6s" repeatCount="indefinite"/>
     </circle>
-    <g transform="translate(1132 210) scale(0.8)">
-      <g>
-        <animateTransform attributeName="transform" type="scale" values="0.86;1" begin="0.15s" dur="1.1s"
-          fill="freeze" calcMode="spline" keySplines="0.16 0.9 0.2 1" keyTimes="0;1"/>
-        <g opacity="0">
-          <animate attributeName="opacity" values="0;1" begin="0.15s" dur="0.9s" fill="freeze"/>
-          <circle r="112" fill="url(#sunG)"/>
-          <g clip-path="url(#sunClip)" opacity="0.13">
-            <g fill="#0B0B0D">
-              {''.join(f'<rect x="-120" y="{-112 + i * 8}" width="240" height="1.6"/>' for i in range(29))}
-            </g>
-          </g>
-          <circle r="112" fill="none" stroke="#F2EAD9" stroke-opacity="0.35"/>
-        </g>
-      </g>
-      <circle r="148" fill="none" stroke="#E63946" stroke-opacity="0.55" stroke-width="1.4" pathLength="1"
-              stroke-dasharray="0.62 0.38" stroke-dashoffset="1">
-        <animate attributeName="stroke-dashoffset" values="1;0" begin="0.45s" dur="1.6s" fill="freeze"/>
-        <animateTransform attributeName="transform" type="rotate" values="0;360" dur="60s" repeatCount="indefinite"/>
+    <g transform="translate(1132 210)">
+      <!-- ThinkingOrbs-inspired breathing core -->
+      <circle r="118" fill="url(#sunG)" opacity="0.22">
+        <animate attributeName="r" values="112;126;112" dur="5.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.16;0.32;0.16" dur="5.5s" repeatCount="indefinite"/>
       </circle>
-      <circle r="166" fill="none" stroke="#F2EAD9" stroke-opacity="0.08"/>
-    </g>
-    <g clip-path="url(#sunClip)" transform="translate(1132 210)">
-      <rect x="-148" y="-1.7" width="0" height="3.4" fill="#F2EAD9" opacity="0.9" transform="rotate(-16)">
-        <animate attributeName="width" values="0;300;300;0" keyTimes="0;0.055;0.94;1"
-                 begin="0.9s" dur="10s" repeatCount="indefinite"/>
-      </rect>
-      <rect x="-148" y="2.2" width="0" height="1.2" fill="#FF8A93" opacity="0.55" transform="rotate(-16)">
-        <animate attributeName="width" values="0;300;300;0" keyTimes="0;0.06;0.94;1"
-                 begin="1.05s" dur="10s" repeatCount="indefinite"/>
-      </rect>
-    </g>
-    <g stroke="#E63946" stroke-width="1.4" fill="none" opacity="0.55">
-      <path d="M1246 150h-26v-46" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
-        <animate attributeName="stroke-dashoffset" values="1;0" begin="1.2s" dur="0.9s" fill="freeze"/>
-      </path>
-      <path d="M1250 286h-24v54" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
-        <animate attributeName="stroke-dashoffset" values="1;0" begin="1.45s" dur="0.9s" fill="freeze"/>
-      </path>
-      <path d="M1132 330v52h64" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
-        <animate attributeName="stroke-dashoffset" values="1;0" begin="1.7s" dur="0.9s" fill="freeze"/>
-      </path>
-    </g>
-    <g fill="#F2EAD9">
-      <circle cx="1266" cy="104" r="3.4"><animate attributeName="opacity" values="0.25;1;0.25" dur="2.6s" repeatCount="indefinite"/></circle>
-      <circle cx="1246" cy="328" r="3.4"><animate attributeName="opacity" values="0.25;1;0.25" dur="3.1s" begin="0.4s" repeatCount="indefinite"/></circle>
-      <circle cx="1116" cy="396" r="3.4"><animate attributeName="opacity" values="0.25;1;0.25" dur="2.2s" begin="0.8s" repeatCount="indefinite"/></circle>
+      <circle r="86" fill="url(#sunG)" opacity="0.85">
+        <animate attributeName="r" values="82;90;82" dur="4.2s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Specular glass highlight -->
+      <path d="M-56 -46 A72 72 0 0 1 42 -60" fill="none" stroke="#F2EAD9" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Orbiting rings -->
+      <g>
+        <animateTransform attributeName="transform" type="rotate" values="0;360" dur="14s" repeatCount="indefinite"/>
+        <ellipse rx="124" ry="52" fill="none" stroke="#E63946" stroke-opacity="0.55" stroke-width="1.4" transform="rotate(-24)"/>
+        <circle cx="113" cy="-50" r="4.5" fill="#FF4D5A"/>
+      </g>
+      <g>
+        <animateTransform attributeName="transform" type="rotate" values="360;0" dur="19s" repeatCount="indefinite"/>
+        <ellipse rx="138" ry="64" fill="none" stroke="#F2EAD9" stroke-opacity="0.24" stroke-width="1.1" transform="rotate(32)"/>
+        <circle cx="-117" cy="-73" r="3.5" fill="#F2EAD9"/>
+      </g>
+      <g>
+        <animateTransform attributeName="transform" type="rotate" values="0;360" dur="26s" repeatCount="indefinite"/>
+        <circle r="154" fill="none" stroke="#E63946" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="18 14 6 14"/>
+        <circle cx="0" cy="-154" r="3" fill="#FF8A93"/>
+      </g>
     </g>
     <g opacity="0">
       <animate attributeName="opacity" values="0;1" begin="0.2s" dur="0.6s" fill="freeze"/>
