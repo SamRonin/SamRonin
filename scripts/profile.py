@@ -537,16 +537,24 @@ def banner(est_year: int | None = None) -> None:
       <animate attributeName="opacity" values="0.5;0.95;0.5" dur="6s" repeatCount="indefinite"/>
     </circle>
     <g transform="translate(1132 210)">
+      <defs>
+        <radialGradient id="orbCore" cx="0.38" cy="0.35" r="0.65">
+          <stop offset="0%" stop-color="#FF8A93" stop-opacity="0.95"/>
+          <stop offset="35%" stop-color="#E63946" stop-opacity="0.82"/>
+          <stop offset="72%" stop-color="#6E111A" stop-opacity="0.45"/>
+          <stop offset="100%" stop-color="#101014" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
       <!-- ThinkingOrbs-inspired breathing core -->
-      <circle r="118" fill="url(#sunG)" opacity="0.22">
+      <circle r="118" fill="url(#orbCore)" opacity="0.35">
         <animate attributeName="r" values="112;126;112" dur="5.5s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.16;0.32;0.16" dur="5.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.25;0.45;0.25" dur="5.5s" repeatCount="indefinite"/>
       </circle>
-      <circle r="86" fill="url(#sunG)" opacity="0.85">
-        <animate attributeName="r" values="82;90;82" dur="4.2s" repeatCount="indefinite"/>
+      <circle r="76" fill="url(#orbCore)" opacity="0.95">
+        <animate attributeName="r" values="72;80;72" dur="4.2s" repeatCount="indefinite"/>
       </circle>
       <!-- Specular glass highlight -->
-      <path d="M-56 -46 A72 72 0 0 1 42 -60" fill="none" stroke="#F2EAD9" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M-48 -38 A62 62 0 0 1 36 -50" fill="none" stroke="#F2EAD9" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
       <!-- Orbiting rings -->
       <g>
         <animateTransform attributeName="transform" type="rotate" values="0;360" dur="14s" repeatCount="indefinite"/>
