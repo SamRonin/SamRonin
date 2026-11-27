@@ -718,9 +718,18 @@ def stats_asset(stats: list[tuple[str, str, str]]) -> None:
     <text x="{cx:.1f}" y="140" class="m" font-size="12" fill="{RED_HI}" letter-spacing="3.4" text-anchor="middle">{esc(label)}</text>
     <text x="{cx:.1f}" y="166" class="m" font-size="11.5" fill="{MUTED}" text-anchor="middle">{esc(sub)}</text>
   </g>''')
+    defs = (f'<linearGradient id="glassStats" x1="0" y1="0" x2="1" y2="1">'
+            f'<stop offset="0" stop-color="{INK}" stop-opacity="0.06"/>'
+            f'<stop offset="0.45" stop-color="{INK}" stop-opacity="0.01"/>'
+            f'<stop offset="1" stop-color="{RED}" stop-opacity="0.05"/></linearGradient>'
+            f'<linearGradient id="glassBorder" x1="0" y1="0" x2="1" y2="1">'
+            f'<stop offset="0" stop-color="{INK}" stop-opacity="0.24"/>'
+            f'<stop offset="0.5" stop-color="{INK}" stop-opacity="0.06"/>'
+            f'<stop offset="1" stop-color="{RED_HI}" stop-opacity="0.18"/></linearGradient>')
     write("stats.svg", w, h, f'''
   <rect width="{w}" height="{h}" rx="16" fill="{PANEL}"/>
-  <rect x="0.75" y="0.75" width="{w - 1.5}" height="{h - 1.5}" rx="15.5" stroke="{INK}" stroke-opacity="0.09" stroke-width="1.5"/>
+  <rect width="{w}" height="{h}" rx="16" fill="url(#glassStats)"/>
+  <rect x="0.75" y="0.75" width="{w - 1.5}" height="{h - 1.5}" rx="15.5" stroke="url(#glassBorder)" stroke-width="1.5"/>
   <line x1="0" y1="1" x2="{w}" y2="1" stroke="{RED}" stroke-opacity="0.16" stroke-width="2"/>
   <line x1="0" y1="1" x2="{w}" y2="1" stroke="{RED_HI}" stroke-width="2.4" stroke-linecap="round"
         pathLength="100" stroke-dasharray="13 87" stroke-dashoffset="100">
@@ -729,7 +738,7 @@ def stats_asset(stats: list[tuple[str, str, str]]) -> None:
   {''.join(cells)}
   <circle cx="{w - 26}" cy="24" r="3" fill="{RED_HI}">
     <animate attributeName="opacity" values="1;0.15;1" dur="1.8s" repeatCount="indefinite"/>
-  </circle>''')
+  </circle>''', defs)
 
 
 def stack_asset(groups: list[tuple[str, list[str]]]) -> None:
@@ -846,13 +855,18 @@ def card_asset(idx: int, r: dict) -> None:
     defs = (f'<linearGradient id="g{idx}" x1="0" y1="0" x2="1" y2="1">'
             f'<stop offset="0" stop-color="#251114"/><stop offset="0.5" stop-color="#131217"/>'
             f'<stop offset="1" stop-color="#101014"/></linearGradient>'
+            f'<linearGradient id="lg{idx}" x1="0" y1="0" x2="1" y2="1">'
+            f'<stop offset="0" stop-color="{INK}" stop-opacity="0.26"/>'
+            f'<stop offset="0.5" stop-color="{INK}" stop-opacity="0.06"/>'
+            f'<stop offset="1" stop-color="{RED_HI}" stop-opacity="0.22"/></linearGradient>'
             f'<pattern id="p{idx}" width="26" height="26" patternUnits="userSpaceOnUse">'
             f'<path d="M26 0H0V26" stroke="#F2EAD9" stroke-opacity="0.028"/></pattern>')
+    bar_w = max(8.0, min(110.0, 110.0 * (pct / 100.0)))
     write(f"card_{r['_slug']}.svg", w, h, f'''
   <rect width="{w}" height="{h}" rx="16" fill="{PANEL}"/>
   <rect width="{w}" height="{h}" rx="16" fill="url(#p{idx})"/>
   <rect width="{w}" height="{h}" rx="16" fill="url(#g{idx})"/>
-  <rect x="0.75" y="0.75" width="{w - 1.5}" height="{h - 1.5}" rx="15.5" stroke="{INK}" stroke-opacity="0.10" stroke-width="1.5"/>
+  <rect x="0.75" y="0.75" width="{w - 1.5}" height="{h - 1.5}" rx="15.5" stroke="url(#lg{idx})" stroke-width="1.5"/>
   <line x1="16" y1="0.9" x2="{w - 16}" y2="0.9" stroke="{RED}" stroke-opacity="0.18" stroke-width="2"/>
   <line x1="16" y1="0.9" x2="{w - 16}" y2="0.9" stroke="{RED_HI}" stroke-width="2.4" stroke-linecap="round"
         pathLength="100" stroke-dasharray="22 78" stroke-dashoffset="100">
@@ -867,6 +881,10 @@ def card_asset(idx: int, r: dict) -> None:
   {''.join(pills)}
   <circle cx="32" cy="{h - 20}" r="4" fill="{lcolor}"/>
   <text x="44" y="{h - 16}" class="m" font-size="11.5" fill="{MUTED}">{esc(lang)} {pct}%</text>
+  <rect x="160" y="{h - 23}" width="110" height="5" rx="2.5" fill="{INK}" fill-opacity="0.08"/>
+  <rect x="160" y="{h - 23}" width="{bar_w:.1f}" height="5" rx="2.5" fill="{lcolor}" fill-opacity="0.85">
+    <animate attributeName="width" values="0;{bar_w:.1f}" begin="0.2s" dur="0.7s" fill="freeze"/>
+  </rect>
   <text x="{w - 28}" y="{h - 16}" class="m" font-size="11" fill="{RED_HI}" text-anchor="end" letter-spacing="1.6">OPEN SOURCE ↗</text>''', defs)
 
 
