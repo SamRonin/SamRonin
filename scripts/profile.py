@@ -766,10 +766,18 @@ def stack_asset(groups: list[tuple[str, list[str]]]) -> None:
     <rect x="{px}" y="{py + 8}" width="3" height="{pill_h - 16}" rx="1.5" fill="{RED}" fill-opacity="0.85"/>
     <text x="{px + 15}" y="{py + 22}" class="m" font-size="13" fill="{DIM}">{esc(it)}</text></g>''')
         yy += pill_h + line_gap
+    defs = (f'<linearGradient id="stackBorder" x1="0" y1="0" x2="1" y2="1">'
+            f'<stop offset="0" stop-color="{INK}" stop-opacity="0.22"/>'
+            f'<stop offset="0.5" stop-color="{INK}" stop-opacity="0.05"/>'
+            f'<stop offset="1" stop-color="{RED_HI}" stop-opacity="0.18"/></linearGradient>'
+            f'<radialGradient id="stackOrb" cx="0.92" cy="0.18" r="0.35">'
+            f'<stop offset="0" stop-color="{RED}" stop-opacity="0.14"/>'
+            f'<stop offset="1" stop-color="{RED}" stop-opacity="0"/></radialGradient>')
     write("stack.svg", w, h, f'''
   <rect width="{w}" height="{h}" rx="16" fill="{PANEL}"/>
-  <rect x="0.75" y="0.75" width="{w - 1.5}" height="{h - 1.5}" rx="15.5" stroke="{INK}" stroke-opacity="0.09" stroke-width="1.5"/>
-  {''.join(body)}''')
+  <rect width="{w}" height="{h}" rx="16" fill="url(#stackOrb)"/>
+  <rect x="0.75" y="0.75" width="{w - 1.5}" height="{h - 1.5}" rx="15.5" stroke="url(#stackBorder)" stroke-width="1.5"/>
+  {''.join(body)}''', defs)
 
 
 def activity_asset(weeks: list[dict], total: int) -> None:
